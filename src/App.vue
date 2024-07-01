@@ -6,9 +6,9 @@
     <button @click="startRecording(2)" :disabled="isRecording2">Start Recording Version 2</button>
     <button @click="stopRecording(2)" :disabled="!isRecording2">Stop Recording Version 2</button>
     <br><br>
-    <button @click="combineRecordings" :disabled="recordChunks1.length === 0 || recordChunks2.length === 0">Combine Recordings</button>
+    <button v-if="recordChunks1.length > 0 && recordChunks2.length > 0" @click="combineRecordings">Combine Recordings</button>
     <br><br>
-    <button v-if="mp3TmpUrl" @click="playCombinedRecording">Play Combined Recording</button>
+    <button v-if="mp3TmpUrl && isCombined" @click="playCombinedRecording">Play Combined Recording</button>
   </div>
 </template>
 
@@ -22,6 +22,7 @@ let isRecording1 = ref(false);
 let isRecording2 = ref(false);
 let mp3TmpUrl = ref(null);
 let combinedAudio = ref(null);
+let isCombined = ref(false);
 
 const saveChunkToRecording = (event, version) => {
   if (version === 1) {
@@ -53,6 +54,7 @@ async function stopRecording(version) {
 }
 
 async function startRecording(version) {
+  isCombined = false;
   if (version === 1) {
     recordChunks1 = [];
   } else if (version === 2) {
@@ -86,6 +88,7 @@ function combineRecordings() {
   const allChunks = [...recordChunks1, ...recordChunks2];
   const combinedBlob = new Blob(allChunks, { type: 'audio/mp3' });
   mp3TmpUrl.value = URL.createObjectURL(combinedBlob);
+  isCombined = true;
 }
 
 function playCombinedRecording() {
